@@ -2,3 +2,5 @@ vk-api
 requests
 beautifulsoup4
 fuzzywuzzy
+
+bs4
