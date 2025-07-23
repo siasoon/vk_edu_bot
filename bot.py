@@ -60,15 +60,28 @@ def search_external_sources(query):
 
         if data.get("AbstractText"):
             return data["AbstractText"]
-        elif data.get("RelatedTopics"):
-            for topic in data["RelatedTopics"]:
-                if isinstance(topic, dict) and "Text" in topic:
-                    return topic["Text"]
+        
+        # Расширяем RelatedTopics
+        related = data.get("RelatedTopics", [])
+        texts = []
+        for topic in related:
+            if isinstance(topic, dict):
+                if "Text" in topic:
+                    texts.append(topic["Text"])
+                elif "Topics" in topic:  # вложенные топики
+                    for sub in topic["Topics"]:
+                        if "Text" in sub:
+                            texts.append(sub["Text"])
+        
+        if texts:
+            return "Вот что удалось найти:\n" + "\n".join(f"- {t}" for t in texts[:3])
+
         return "Извините, я не нашёл ничего полезного в открытых источниках. Попробуй переформулировать запрос."
-    
+
     except Exception as e:
         print("Ошибка при поиске:", e)
         return "Произошла ошибка при обращении к интернет-источникам."
+
 
 
 # === Главный цикл бота ===
