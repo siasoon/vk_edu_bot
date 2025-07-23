@@ -180,8 +180,9 @@ for event in longpoll.listen():
             # Проверяем вопросы по курсам
             answer = answer_about_courses(text, courses_data)
 
-       if not answer:
-            answer = search_external_sources(text)
+            # Вот здесь был неправильный отступ 👇
+            if not answer:
+                answer = search_external_sources(text)
 
         vk.messages.send(
             user_id=event.user_id,
