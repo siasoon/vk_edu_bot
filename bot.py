@@ -143,6 +143,30 @@ def answer_about_courses(msg, courses):
 
     return None
 
+def search_external_sources(query):
+    try:
+        params = {
+            "q": query,
+            "format": "json",
+            "no_redirect": 1,
+            "no_html": 1,
+        }
+        response = requests.get("https://api.duckduckgo.com/", params=params)
+        data = response.json()
+
+        if data.get("AbstractText"):
+            return data["AbstractText"]
+        elif data.get("RelatedTopics"):
+            for topic in data["RelatedTopics"]:
+                if isinstance(topic, dict) and "Text" in topic:
+                    return topic["Text"]
+        return "Извините, я не нашёл ничего полезного в открытых источниках. Попробуй переформулировать запрос."
+    
+    except Exception as e:
+        print("Ошибка при поиске:", e)
+        return "Произошла ошибка при обращении к интернет-источникам."
+
+
 # === Главный цикл бота ===
 for event in longpoll.listen():
     if event.type == VkEventType.MESSAGE_NEW and event.to_me:
@@ -156,8 +180,9 @@ for event in longpoll.listen():
             # Проверяем вопросы по курсам
             answer = answer_about_courses(text, courses_data)
 
-        if not answer:
-            answer = "Извини, я не понял вопрос. Попробуй переформулировать или выбери вопрос из кнопок ниже 👇"
+       if not answer:
+    # Если нет ответа — пробуем найти в интернете
+    answer = search_external_sources(text)
 
         vk.messages.send(
             user_id=event.user_id,
