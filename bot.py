@@ -181,8 +181,7 @@ for event in longpoll.listen():
             answer = answer_about_courses(text, courses_data)
 
        if not answer:
-    # Если нет ответа — пробуем найти в интернете
-    answer = search_external_sources(text)
+            answer = search_external_sources(text)
 
         vk.messages.send(
             user_id=event.user_id,
