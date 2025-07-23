@@ -47,6 +47,8 @@ def get_best_match(user_msg, questions):
 
 # === Функция обработки вопросов про курсы ===
 
+
+
 def search_external_sources(query):
     try:
         params = {
@@ -54,34 +56,24 @@ def search_external_sources(query):
             "format": "json",
             "no_redirect": 1,
             "no_html": 1,
+            "skip_disambig": 1
         }
         response = requests.get("https://api.duckduckgo.com/", params=params)
         data = response.json()
 
         if data.get("AbstractText"):
             return data["AbstractText"]
-        
-        # Расширяем RelatedTopics
+
+        # Если AbstractText пустой, пробуем вернуть RelatedTopics
         related = data.get("RelatedTopics", [])
-        texts = []
         for topic in related:
-            if isinstance(topic, dict):
-                if "Text" in topic:
-                    texts.append(topic["Text"])
-                elif "Topics" in topic:  # вложенные топики
-                    for sub in topic["Topics"]:
-                        if "Text" in sub:
-                            texts.append(sub["Text"])
-        
-        if texts:
-            return "Вот что удалось найти:\n" + "\n".join(f"- {t}" for t in texts[:3])
+            if isinstance(topic, dict) and topic.get("Text"):
+                return topic["Text"]
 
-        return "Извините, я не нашёл ничего полезного в открытых источниках. Попробуй переформулировать запрос."
-
+        return "Извините, я не нашёл полезной информации в открытых источниках. Попробуйте переформулировать запрос."
     except Exception as e:
         print("Ошибка при поиске:", e)
         return "Произошла ошибка при обращении к интернет-источникам."
-
 
 
 # === Главный цикл бота ===
@@ -94,12 +86,7 @@ for event in longpoll.listen():
         if matched_question:
             answer = faq[matched_question]
         else:
-            # Проверяем вопросы по курсам
-            answer = answer_about_courses(text, courses_data)
-
-            # Вот здесь был неправильный отступ 👇
-            if not answer:
-                answer = search_external_sources(text)
+            answer = search_external_sources(text)
 
         vk.messages.send(
             user_id=event.user_id,
