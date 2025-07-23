@@ -1,3 +1,4 @@
-vk_api
+vk-api
 requests
 beautifulsoup4
+fuzzywuzzy
