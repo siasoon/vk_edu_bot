@@ -6,7 +6,7 @@ from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 from fuzzywuzzy import fuzz
 from parser import parse_vk_education_courses
 
-vk_session = vk_api.VkApi(token="ВАШ_ТОКЕН")
+vk_session = vk_api.VkApi(token="vk1.a.rM7jjKpwccx0heaZpDKq5kWOXC3lni6tpOS0NkxJWmPpTwf0RHGOSR9KKfRslDm6V6lHZNobhQj48Fp1Sk_5X2g_htKfHdlrDyfC0ILghiNwYDqd9ry7veRIaMjGnh33mELsyEa1NuiOLVsOQ_0b5ZdObxP1CRUGREfaUY-UWLP3jsaWOlLEiEsXlAg697vR2FanTJXzVdxepcI1vHYWBQ")
 vk = vk_session.get_api()
 longpoll = VkLongPoll(vk)
 
