@@ -98,9 +98,31 @@ def get_best_match(user_msg, questions):
 def answer_about_courses(msg, courses):
     msg = msg.lower()
 
-    # Примеры ключевых слов для поиска по курсам
+    # Ответ на вопрос о формате проекта с названием
+    # Пример: "какой формат у проекта X"
+    if "формат" in msg:
+        # Пытаемся найти название проекта в сообщении
+        for course in courses:
+            if course["title"].lower() in msg:
+                return f"Формат проведения курса «{course['title']}»: {course['format']}."
+
+    # Поиск проектов по целевой аудитории (например "школьник", "студент", "выпускник")
+    # Предположим, что в course['topics'] или отдельном поле есть такая инфа (нужно проверить на сайте)
+    audiences = ["школьник", "студент", "выпускник", "начинающий", "продвинутый"]
+
+    for aud in audiences:
+        if aud in msg:
+            matched = [c for c in courses if aud in c.get("topics", "").lower()]
+            if matched:
+                response = f"Вот проекты, подходящие для {aud}:\n"
+                for c in matched:
+                    response += f"- {c['title']}\n"
+                return response
+            else:
+                return f"К сожалению, проекты для категории '{aud}' не найдены."
+
+    # Сохраняем остальные проверки из предыдущего примера
     if any(word in msg for word in ["фронтенд", "frontend", "верстка"]):
-        # Ищем курсы с темой фронтенд
         matched = [c for c in courses if "фронтенд" in c["topics"].lower() or "frontend" in c["topics"].lower()]
         if matched:
             response = "Вот курсы, в которых затрагивается тема фронтенд разработки:\n"
@@ -110,16 +132,13 @@ def answer_about_courses(msg, courses):
         else:
             return "К сожалению, курсы с темой фронтенд не найдены."
 
-    # Пример: запрос о сроках конкретного проекта
     if "срок" in msg or "длится" in msg:
-        # Ищем название проекта в сообщении
         for course in courses:
             if course["title"].lower() in msg:
                 return f"Проект «{course['title']}» длится: {course['duration']}."
 
-    # Можно добавить больше правил и проверок
-
     return None
+
 
 # === Главный цикл бота ===
 for event in longpoll.listen():
