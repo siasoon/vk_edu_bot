@@ -39,16 +39,10 @@ keyboard = {
 }
 keyboard_json = json.dumps(keyboard, ensure_ascii=False).encode('utf-8').decode('utf-8')
 
-# === Функция для fuzzy matching ===
 def get_best_match(user_msg, questions):
     user_msg = user_msg.lower()
     matches = difflib.get_close_matches(user_msg, questions, n=1, cutoff=0.5)
     return matches[0] if matches else None
-
-# === Функция обработки вопросов про курсы ===
-
-
-import requests
 
 def search_with_serpapi(query):
     try:
@@ -69,13 +63,28 @@ def search_with_serpapi(query):
         print("Ошибка SerpAPI:", e)
         return "Произошла ошибка при поиске."
 
+banned_words = ["блять", "сука", "нахуй", "пизд", "ебан", "хуй", "чмо", "мразь", "гандон",
+    "долбаёб", "урод", "сволочь", "тварь"]
 
-# === Главный цикл бота ===
+def contains_profanity(text):
+    words = text.lower().split()
+    for word in words:
+        for banned in banned_words:
+            if banned in word:
+                return True
+    return False
+
 for event in longpoll.listen():
     if event.type == VkEventType.MESSAGE_NEW and event.to_me:
         text = event.text.lower()
-
-        # Сначала проверяем FAQ с fuzzy
+        if contains_profanity(text):
+            vk.messages.send(
+                user_id=event.user_id,
+                message="Пожалуйста, соблюдайте нормы общения. Ваш вопрос содержит недопустимые выражения.",
+                random_id=0,
+                keyboard=keyboard_json
+            )
+            continue  
         matched_question = get_best_match(text, list(faq.keys()))
         if matched_question:
             answer = faq[matched_question]
