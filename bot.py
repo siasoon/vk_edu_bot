@@ -80,7 +80,7 @@ for event in longpoll.listen():
         if matched_question:
             answer = faq[matched_question]
         else:
-            answer = search_external_sources(text)
+            answer = search_with_serpapi(text)
 
         vk.messages.send(
             user_id=event.user_id,
