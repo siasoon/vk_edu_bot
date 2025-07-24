@@ -48,52 +48,26 @@ def get_best_match(user_msg, questions):
 # === Функция обработки вопросов про курсы ===
 
 
-def extract_related_text(topics):
-    for topic in topics:
-        if isinstance(topic, dict):
-            if topic.get("Text"):
-                return topic["Text"]
-            # Рекурсивный случай, если вложенный список
-            if topic.get("Topics"):
-                text = extract_related_text(topic["Topics"])
-                if text:
-                    return text
-    return None
+import requests
 
-def search_external_sources(query):
+def search_with_serpapi(query):
     try:
         params = {
             "q": query,
-            "format": "json",
-            "no_redirect": 1,
-            "no_html": 1,
-            "skip_disambig": 1
+            "api_key": "ТВОЙ_API_КЛЮЧ",  # ← сюда вставь свой ключ
+            "engine": "google",
+            "num": 1
         }
-        response = requests.get("https://api.duckduckgo.com/", params=params)
+        response = requests.get("https://serpapi.com/search", params=params)
         data = response.json()
 
-        # Проверяем несколько возможных полей с ответами
-        for field in ["AbstractText", "Definition", "Answer"]:
-            if data.get(field):
-                return data[field]
-
-        # Рекурсивно проверяем RelatedTopics
-        related_text = extract_related_text(data.get("RelatedTopics", []))
-        if related_text:
-            return related_text
-
-        # Проверяем поле Results (список)
-        results = data.get("Results", [])
-        if results:
-            for res in results:
-                if res.get("Text"):
-                    return res["Text"]
-
-        return "Извините, я не нашёл полезной информации. Попробуйте переформулировать запрос."
+        if "organic_results" in data and data["organic_results"]:
+            return data["organic_results"][0]["snippet"]
+        else:
+            return "Ничего не нашлось через интернет-поиск."
     except Exception as e:
-        print("Ошибка при поиске:", e)
-        return "Произошла ошибка при обращении к интернет-источникам."
-
+        print("Ошибка SerpAPI:", e)
+        return "Произошла ошибка при поиске."
 
 
 # === Главный цикл бота ===
