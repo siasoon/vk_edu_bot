@@ -54,7 +54,7 @@ def search_with_serpapi(query):
     try:
         params = {
             "q": query,
-            "api_key": "ТВОЙ_API_КЛЮЧ",  # ← сюда вставь свой ключ
+            "api_key": "85e1420dec2be33b79c5a2fa46f4cdceb16bceb7287340626eebc3dedd008a0e",  # ← сюда вставь свой ключ
             "engine": "google",
             "num": 1
         }
