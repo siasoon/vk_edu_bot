@@ -48,6 +48,17 @@ def get_best_match(user_msg, questions):
 # === Функция обработки вопросов про курсы ===
 
 
+def extract_related_text(topics):
+    for topic in topics:
+        if isinstance(topic, dict):
+            if topic.get("Text"):
+                return topic["Text"]
+            # Рекурсивный случай, если вложенный список
+            if topic.get("Topics"):
+                text = extract_related_text(topic["Topics"])
+                if text:
+                    return text
+    return None
 
 def search_external_sources(query):
     try:
@@ -61,19 +72,28 @@ def search_external_sources(query):
         response = requests.get("https://api.duckduckgo.com/", params=params)
         data = response.json()
 
-        if data.get("AbstractText"):
-            return data["AbstractText"]
+        # Проверяем несколько возможных полей с ответами
+        for field in ["AbstractText", "Definition", "Answer"]:
+            if data.get(field):
+                return data[field]
 
-        # Если AbstractText пустой, пробуем вернуть RelatedTopics
-        related = data.get("RelatedTopics", [])
-        for topic in related:
-            if isinstance(topic, dict) and topic.get("Text"):
-                return topic["Text"]
+        # Рекурсивно проверяем RelatedTopics
+        related_text = extract_related_text(data.get("RelatedTopics", []))
+        if related_text:
+            return related_text
 
-        return "Извините, я не нашёл полезной информации в открытых источниках. Попробуйте переформулировать запрос."
+        # Проверяем поле Results (список)
+        results = data.get("Results", [])
+        if results:
+            for res in results:
+                if res.get("Text"):
+                    return res["Text"]
+
+        return "Извините, я не нашёл полезной информации. Попробуйте переформулировать запрос."
     except Exception as e:
         print("Ошибка при поиске:", e)
         return "Произошла ошибка при обращении к интернет-источникам."
+
 
 
 # === Главный цикл бота ===
